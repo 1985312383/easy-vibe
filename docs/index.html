@@ -6,35 +6,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css" />
   <style>
+    /* --- 1. 原有样式保持 --- */
     .github-corner:hover .octo-arm {
       animation: octocat-wave 560ms ease-in-out;
     }
     @keyframes octocat-wave {
-      0%,
-      100% {
-        transform: rotate(0);
-      }
-      20%,
-      60% {
-        transform: rotate(-25deg);
-      }
-      40%,
-      80% {
-        transform: rotate(10deg);
-      }
+      0%, 100% { transform: rotate(0); }
+      20%, 60% { transform: rotate(-25deg); }
+      40%, 80% { transform: rotate(10deg); }
     }
     @media (max-width: 500px) {
-      .github-corner:hover .octo-arm {
-        animation: none;
-      }
-      .github-corner .octo-arm {
-        animation: octocat-wave 560ms ease-in-out;
-      }
+      .github-corner:hover .octo-arm { animation: none; }
+      .github-corner .octo-arm { animation: octocat-wave 560ms ease-in-out; }
     }
 
     :root {
       --sidebar-width: 230px;
       --sidebar-padding: 12px 24px;
+      --theme-color: #42b983;
     }
 
     .markdown-section {
@@ -51,6 +40,122 @@
 
     .app-sub-sidebar li::before {
       content: none !important;
+    }
+
+    /* --- 2. 新增：暗黑模式核心样式 --- */
+    :root {
+      --dark-bg: #1a1a1a;
+      --dark-sidebar: #141414;
+      --dark-border: #333;
+      /* 优化后的高对比度文字颜色 */
+      --dark-text: #e6e6e6;
+      --dark-code-bg: #2b2b2b;
+      --dark-code-text: #f8f8f2;
+    }
+
+    /* 基础反色 */
+    body.dark-mode {
+      background-color: var(--dark-bg);
+      color: var(--dark-text);
+    }
+
+    /* 侧边栏适配 */
+    body.dark-mode .sidebar {
+      background-color: var(--dark-sidebar);
+      border-right: 1px solid var(--dark-border);
+      color: var(--dark-text);
+    }
+    body.dark-mode .sidebar-nav li a {
+      color: #999;
+    }
+    body.dark-mode .sidebar-nav li.active > a {
+      color: var(--theme-color);
+      border-right: 2px solid var(--theme-color);
+    }
+    /* 侧边栏名称适配 */
+    body.dark-mode .app-name-link {
+      color: var(--dark-text);
+    }
+
+    /* 搜索框适配 */
+    body.dark-mode .search {
+      border-bottom: 1px solid var(--dark-border);
+    }
+    body.dark-mode .search input {
+      background-color: transparent;
+      color: var(--dark-text);
+    }
+    body.dark-mode .results-panel {
+      background-color: var(--dark-bg);
+      color: var(--dark-text);
+    }
+    body.dark-mode .matching-post {
+      border-bottom: 1px solid var(--dark-border);
+    }
+    body.dark-mode .matching-post h2, 
+    body.dark-mode .matching-post p {
+      color: var(--dark-text);
+    }
+
+    /* 代码块适配 */
+    body.dark-mode pre {
+      background-color: var(--dark-code-bg) !important;
+    }
+    body.dark-mode code {
+      background-color: var(--dark-code-bg) !important;
+      color: var(--dark-code-text) !important;
+    }
+    body.dark-mode .markdown-section code {
+      color: #f08d49;
+      background-color: rgba(255,255,255,0.1);
+    }
+
+    /* 正文元素适配 */
+    body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, 
+    body.dark-mode h4, body.dark-mode h5, body.dark-mode h6 {
+      color: #ffffff;
+    }
+    body.dark-mode blockquote {
+      color: #b0b0b0;
+      background: rgba(255,255,255,0.05);
+      border-left-color: var(--theme-color);
+    }
+    body.dark-mode strong {
+      color: #fff;
+    }
+    
+    /* 表格适配 */
+    body.dark-mode .markdown-section tr:nth-child(2n) {
+      background-color: rgba(255,255,255,0.03);
+    }
+    body.dark-mode .markdown-section td, 
+    body.dark-mode .markdown-section th {
+      border-color: var(--dark-border);
+    }
+
+    /* --- 3. 侧边栏开关按钮样式 --- */
+    .sidebar-toggle-btn {
+      cursor: pointer;
+      display: block;
+      text-align: center;
+      padding: 10px 0;
+      margin: 0 15px 10px 15px;
+      font-weight: bold;
+      font-size: 14px;
+      border-radius: 4px;
+      background-color: rgba(0,0,0,0.05);
+      color: #505d6b;
+      border: 1px solid rgba(0,0,0,0.05);
+      transition: all 0.3s;
+    }
+    body.dark-mode .sidebar-toggle-btn {
+      background-color: rgba(255,255,255,0.1);
+      color: #ccc;
+      border: 1px solid #444;
+    }
+    .sidebar-toggle-btn:hover {
+      background-color: var(--theme-color);
+      color: white;
     }
   </style>
 </head>
@@ -88,6 +193,16 @@
       },
       subMaxLevel: 2,
       homepage: 'README.md',
+      
+      // --- 配置搜索 ---
+      search: {
+        paths: 'auto',
+        placeholder: '🔍 搜索',
+        noData: '😞 找不到结果',
+        depth: 6,
+        hideOtherSidebarContent: false 
+      },
+
       pagination: {
         previousText: '上一页',
         nextText: '下一页',
@@ -105,6 +220,41 @@
         isExpected: true
       },
       plugins: [
+        // 1. 暗黑模式切换插件 (新增)
+        function(hook, vm) {
+          hook.doneEach(function() {
+            // 获取侧边栏容器
+            const sidebar = document.querySelector('.sidebar-nav');
+            // 防止重复添加
+            if (!sidebar || document.querySelector('.sidebar-toggle-btn')) return;
+
+            // 创建按钮
+            const btn = document.createElement('div');
+            btn.className = 'sidebar-toggle-btn';
+            
+            // 初始化状态
+            const savedTheme = localStorage.getItem('theme-mode');
+            if (savedTheme === 'dark') {
+              document.body.classList.add('dark-mode');
+              btn.textContent = '🌙 Switch to Light';
+            } else {
+              btn.textContent = '☀️ Switch to Dark';
+            }
+
+            // 点击事件
+            btn.onclick = function() {
+              document.body.classList.toggle('dark-mode');
+              const isDark = document.body.classList.contains('dark-mode');
+              localStorage.setItem('theme-mode', isDark ? 'dark' : 'light');
+              btn.textContent = isDark ? '🌙 Switch to Light' : '☀️ Switch to Dark';
+            };
+
+            // 插入到侧边栏最顶部 (在搜索框下方，菜单上方)
+            sidebar.insertBefore(btn, sidebar.firstChild);
+          });
+        },
+
+        // 2. 移动字数统计位置 (保留原有)
         function (hook, vm) {
           hook.doneEach(function () {
             setTimeout(function () {
@@ -125,6 +275,10 @@
     };
   </script>
   <script src="//cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+  
+  <!-- 引入搜索插件 -->
+  <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/zoom-image.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/docsify-copy-code"></script>
   <script src="//cdn.jsdelivr.net/npm/prismjs@latest/components/prism-bash.min.js"></script>
